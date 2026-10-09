@@ -70,13 +70,6 @@ It also works on any plain static host (GitHub Pages, for example). In that case
    ```
 
 Reload and it shows up in the level select screen, tagged "custom".
-
-## Technical notes
-
-- **No build step** — the source is the artifact; edit and refresh, no webpack / vite involved
-- **Decoupled render thread** — logic runs on the main thread, rendering can run in a dedicated Worker
-- **Worker pool** — heavy jobs such as level generation and list loading are computed in parallel
-- **Procedural levels** — simulated-annealing iteration evolves the world structure, plus procedural decoration
 - **Asset localisation** — one level is one folder; imported assets are copied into that level's directory so it can be moved as a whole
 
 ## License
