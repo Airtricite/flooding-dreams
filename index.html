@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Flooding Dreams · 洪梦</title>
+<link rel="stylesheet" href="./.flooding_dreams/styles/main.css">
+<link rel="stylesheet" href="./.flooding_dreams/styles/editor.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="gl"></canvas>
+
+  <!-- ══════════════ 启动 / 读取 ══════════════ -->
+  <div id="boot" class="screen show">
+    <div class="boot-box">
+      <div class="boot-title">Flooding Dreams</div>
+      <div class="boot-sub">洪 梦</div>
+      <div class="boot-bar"><i id="boot-fill"></i></div>
+      <div class="boot-msg" id="boot-msg">正在初始化…</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 关卡 / 场景加载 ══════════════ -->
+  <div id="loading" class="screen">
+    <div class="boot-box">
+      <div class="boot-title">Flooding Dreams</div>
+      <div class="load-name" id="load-name"></div>
+      <div class="boot-bar"><i id="load-fill"></i></div>
+      <div class="boot-msg" id="load-msg">正在加载…</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 大厅底部栏 ══════════════ -->
+  <div id="hallbar" class="hidden">
+    <button class="hall-btn" data-act="menu" title="开始界面"><span>☰</span><em>菜单</em></button>
+    <button class="hall-btn" data-act="levels" title="关卡选择"><span>◆</span><em>关卡</em></button>
+    <button class="hall-btn" data-act="settings" title="偏好设置"><span>⚙</span><em>设置</em></button>
+    <div class="hall-hint">WASD 移动 · 鼠标 视角 · 滚轮 缩放 · 空格 跳跃</div>
+  </div>
+
+  <!-- ══════════════ 开始界面 ══════════════ -->
+  <div id="menu" class="screen">
+    <div class="menu-aurora"></div>
+    <div class="menu-wrap">
+      <div class="brand">
+        <div class="brand-title">Flooding&nbsp;Dreams</div>
+        <div class="brand-sub">洪 梦 &nbsp;·&nbsp; 在梦里，水一直在涨</div>
+      </div>
+      <div class="menu-btns">
+        <button class="mbtn primary" data-act="play"><b>开始游戏</b><i>在云端卧室的床上安心入梦</i></button>
+        <button class="mbtn" data-act="replays"><b>游玩回放</b><i>回看记录</i></button>
+        <button class="mbtn" data-act="skin"><b>角色皮肤</b><i>给 glb/gltf 角色涂画皮肤 · 挂挂件</i></button>
+        <button class="mbtn" data-act="editor"><b>关卡编辑器</b><i>打造属于你的梦境</i></button>
+        <button class="mbtn" data-act="settings"><b>设置</b><i>按键绑定 · 鼠标灵敏度 · 画质</i></button>
+        <button class="mbtn" data-act="help"><b>操作说明</b><i>怎么玩</i></button>
+      </div>
+    </div>
+    <div class="menu-foot">v0.9</div>
+  </div>
+
+  <!-- ══════════════ 关卡选择 ══════════════ -->
+  <div id="levels" class="screen">
+    <div class="panel-head">
+      <h2>选择关卡</h2>
+      <div class="head-tools">
+        <input id="lv-search" class="inp" type="search" placeholder="搜索关卡名…">
+        <span id="lv-sort" class="gsel-host"></span>
+        <button class="mbtn sm hidden" data-act="hall" title="放弃当前关卡，回到大厅">⌂ 返回大厅</button>
+        <button class="xbtn" data-act="close">✕</button>
+      </div>
+    </div>
+    <div id="lv-variant" class="lv-variant-host"></div>
+    <div id="lv-diff-legend" class="diff-legend"></div>
+    <div class="lv-tabs" id="lv-tabs">
+      <button class="tab on" data-tab="levels">关卡</button>
+      <button class="tab" data-tab="packs">关卡包</button>
+    </div>
+    <div id="lv-grid" class="lv-grid"></div>
+    <div id="lv-packs" class="lv-packs hidden"></div>
+  </div>
+
+  <!-- ══════════════ 关卡节点地图（关卡包） ══════════════ -->
+  <div id="lvmap" class="screen">
+    <div class="panel-head">
+      <h2 id="lvm-title">关卡包</h2>
+      <div class="head-tools">
+        <button class="xbtn" data-act="close">✕</button>
+      </div>
+    </div>
+    <div id="lvm-sub" class="lvm-sub"></div>
+    <div id="lvm-variant" class="lv-variant-host"></div>
+    <div class="lvm-wrap">
+      <div id="lvm-stage" class="lvm-stage"></div>
+      <div id="lvm-info" class="lvm-info"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 设置 ══════════════ -->
+  <div id="settings" class="screen">
+    <div class="panel-head">
+      <h2>偏好设置</h2>
+      <div class="head-tools">
+        <button class="xbtn" data-act="close">✕</button>
+      </div>
+    </div>
+    <div class="settings-body">
+      <div class="tabbar" id="st-tabs">
+        <button class="tab on" data-tab="control">操作</button>
+        <button class="tab" data-tab="camera">视角</button>
+        <button class="tab" data-tab="video">画面</button>
+        <button class="tab" data-tab="audio">声音</button>
+        <button class="tab" data-tab="misc">其他</button>
+      </div>
+      <div class="tabpanes" id="st-panes"></div>
+    </div>
+    <div class="panel-foot">
+      <button class="mbtn sm" data-act="reset">恢复默认</button>
+      <button class="mbtn sm primary" data-act="close">完成</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ 帮助 ══════════════ -->
+  <div id="help" class="screen">
+    <div class="panel-head">
+      <h2>操作说明</h2>
+      <div class="head-tools"><button class="xbtn" data-act="close">✕</button></div>
+    </div>
+    <div class="help-body" id="help-body"></div>
+  </div>
+
+  <!-- ══════════════ 存档列表（编辑器入口） ══════════════ -->
+  <div id="saves" class="screen">
+    <div class="panel-head">
+      <h2>我的关卡存档</h2>
+      <div class="head-tools">
+        <button class="mbtn sm primary" data-act="new">＋ 新建存档</button>
+        <button class="mbtn sm" data-act="copybuiltin" title="把官方 / 自定义关卡复制一份到「我的关卡」，然后进编辑器改">复制内置关卡</button>
+        <button class="mbtn sm" data-act="import">导入文件</button>
+        <input type="file" id="lv-import-file" accept=".json,.fdlevel" hidden>
+        <button class="xbtn" data-act="close">✕</button>
+      </div>
+    </div>
+    <div id="sv-grid" class="lv-grid"></div>
+  </div>
+
+  <!-- ══════════════ 游玩回放列表 ══════════════ -->
+  <div id="replays" class="screen">
+    <div class="panel-head">
+      <h2>游玩回放</h2>
+      <div class="head-tools">
+        <span id="rp-filter" class="gsel-host"></span>
+        <button class="mbtn sm" data-rp="clear" title="删除全部回放记录">清空</button>
+        <button class="xbtn" data-rp="close">✕</button>
+      </div>
+    </div>
+    <div class="rp-tip">每一局游玩都会自动录成一段回放（最长 8 分钟）。<b>通关</b>的局会解锁「电影级运镜剪辑」。</div>
+    <div id="rp-grid" class="rp-grid"></div>
+  </div>
+
+  <!-- ══════════════ 角色皮肤编辑器（3D 窗口：画布在下方透出，面板浮在左侧） ══════════════ -->
+  <div id="skin" class="screen">
+    <div id="skin-side" class="skin-side"></div>
+    <div id="skin-tip" class="skin-tip"></div>
+  </div>
+
+  <!-- ══════════════ 贴图修改器（独立编辑器：左侧配方 / 图层，右侧 2D + 3D 预览） ══════════════ -->
+  <div id="texmod" class="screen">
+    <div class="panel-head">
+      <h2 id="tm-title">贴图修改器</h2>
+      <div class="head-tools">
+        <button class="mbtn sm" data-tm="add-layer" title="在选中图层之后插入一个新图层">＋ 图层</button>
+        <button class="mbtn sm" data-tm="reload" title="丢弃未保存的改动，重新载入已保存的配方">↺ 重新载入</button>
+        <button class="mbtn sm primary" data-tm="save" title="把结果烘焙成 PNG 写进关卡素材文件夹，并保存配方">⬇ 烘焙并保存</button>
+        <button class="xbtn" data-tm="close">✕</button>
+      </div>
+    </div>
+    <div class="tm-wrap">
+      <div id="tm-side" class="tm-side"></div>
+      <div class="tm-main">
+        <div class="tm-view">
+          <div class="tm-view-h"><span>2D 无缝预览</span><em id="tm-2d-hint"></em></div>
+          <canvas id="tm-2d"></canvas>
+        </div>
+        <div class="tm-view">
+          <div class="tm-view-h"><span>3D 物体预览</span><span id="tm-shape" class="gsel-host"></span></div>
+          <canvas id="tm-3d"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 电影级运镜剪辑 ══════════════ -->
+  <div id="cine" class="screen">
+    <div class="panel-head">
+      <h2>电影级运镜剪辑</h2>
+      <div class="head-tools">
+        <span class="cine-ver" id="cine-ver">🎞 基准排片</span>
+        <span class="gsel-host cine-style" id="cine-style"></span>
+        <button class="mbtn sm primary" data-cine="diversify" title="按「风格 + 新种子」重排一版：运镜合理（射线选位 / 转场闸门一条不少）但排法、节奏与换轴都不同">🎲 换一版</button>
+        <button class="mbtn sm" data-cine="auto">重新自动剪</button>
+        <button class="mbtn sm" data-cine="apply">应用并播放</button>
+        <button class="mbtn sm" data-cine="export">导出镜头表</button>
+        <button class="xbtn" data-cine="close">✕</button>
+      </div>
+    </div>
+    <div class="cine-tip">
+      整局按 1:1 完整重演（不删减、不留黑场），这里改的是「镜头」：运镜类型 / 节奏 / 保留与否。
+      自动剪按电影规则排片：开场建立镜头最长 → 动作递进渐短 → 高潮最短 → 收尾留白；
+      相邻两镜方位角错开 ≥36°，切点落在动作拐点上；斯坦尼康跟拍与沉浸 POV 交替使用；
+      玩家不在水里时镜头绝不入水，机位由射线保证不穿墙、不入地。
+      <b>🎲 换一版</b>按「风格 + 种子」重排：只换排法（运镜偏好顺序 / 景别表 / 换轴阶梯 / 节奏 / 距离），
+      选位与转场的全部安全闸门照旧执行 —— 每次都是新排法，每次也都拍得出来。
+    </div>
+    <div id="cine-list" class="cine-list"></div>
+  </div>
+
+  <!-- ══════════════ 游戏 HUD ══════════════ -->
+  <div id="hud" class="hidden">
+    <div id="crosshair"><i></i><i></i><i></i><i></i><b></b></div>
+    <div id="hud-top">
+      <div id="hud-level">
+        <span id="hud-level-name">关卡</span>
+        <span id="hud-level-diff" class="diff-tag">—</span>
+      </div>
+      <div id="hud-stats">
+        <span id="hud-timer">00:00.00</span>
+        <span id="hud-deaths">☠ 0</span>
+      </div>
+      <div id="hud-objective"></div>
+    </div>
+    <!-- 顶部弹出信息 / 警告（事件动作「显示顶部提示」触发） -->
+    <div id="hud-notice"></div>
+    <!-- ══════════════ 触屏操作层（仅触屏设备显示） ══════════════ -->
+    <div id="tui" class="hidden">
+      <div id="tui-look"></div>
+      <div id="tui-stick" class="tui-ctl"><i></i></div>
+      <div id="tui-btns" class="tui-ctl">
+        <button class="tui-btn" data-tk="view" title="切换视角"><b>◉</b><em>视角</em></button>
+        <button class="tui-btn" data-tk="use" title="使用工具"><b>◎</b><em>使用</em></button>
+        <button class="tui-btn" data-tk="dive" title="下潜 / 速降 / 滑铲"><b>↧</b><em>下潜</em></button>
+        <button class="tui-btn big" data-tk="jump" title="跳跃 / 上浮"><b>↥</b><em>跳跃</em></button>
+      </div>
+      <div id="tui-top" class="tui-ctl">
+        <button class="tui-mini" data-tk="pause" title="暂停 / 退出锁鼠">❙❙</button>
+        <button class="tui-mini" data-tk="full" title="全屏">⤢</button>
+      </div>
+      <div id="tui-rotate">建议横屏游玩</div>
+    </div>
+
+    <div id="hud-bottom">
+      <!-- 角色血量：左下角圆形环 + 百分比 -->
+      <div id="hp-wrap">
+        <svg viewBox="0 0 44 44" aria-hidden="true">
+          <circle class="hp-track" cx="22" cy="22" r="18"></circle>
+          <circle id="hp-ring" class="hp-ring" cx="22" cy="22" r="18"></circle>
+        </svg>
+        <b id="hp-num">100%</b>
+      </div>
+      <div id="oxygen-wrap">
+        <div class="ox-label"><span>氧气</span><b id="ox-num">100</b></div>
+        <div class="ox-bar"><i id="ox-fill"></i><u id="ox-extra"></u></div>
+      </div>
+      <div id="toolbar"></div>
+    </div>
+    <div id="hud-center">
+      <div id="prompt" class="hidden"></div>
+      <div id="damage-vignette"></div>
+      <div id="banner"><b id="banner-title"></b><span id="banner-sub"></span></div>
+    </div>
+    <div id="hud-hint" class="hidden"></div>
+    <!-- 编辑器试玩：测试位点（E 记录 / R 传送，仅试玩中显示） -->
+    <div id="hud-testpts" class="hidden">
+      <div class="tp-head">
+        <span>测试位点</span>
+        <button class="tp-mini" data-tp="fold" title="折叠 / 展开">－</button>
+      </div>
+      <div class="tp-tip">E 记录当前站位 · R 传送至选中位点</div>
+      <ul id="hud-testpts-list"></ul>
+      <div class="tp-empty">还没有位点：按 E 记录</div>
+    </div>
+    <div id="hud-lock" class="hidden">点击画面以锁定鼠标 · 也可按住右键拖动转视角</div>
+  </div>
+
+  <!-- ══════════════ 开局倒数 ══════════════ -->
+  <div id="countdown" class="hidden"><b id="countdown-num">3</b></div>
+
+  <!-- ══════════════ 回放播放条 ══════════════ -->
+  <div id="rphud" class="hidden">
+    <div id="rp-fade"></div>
+    <div id="rp-shot"><b id="rp-shot-label"></b><i id="rp-shot-type"></i></div>
+    <div id="rp-bar">
+      <button class="rp-btn" data-rp="back" title="退出回放（Esc）">✕</button>
+      <button class="rp-btn" data-rp="prev" title="上一镜（←）">⏮</button>
+      <button class="rp-btn big" data-rp="play" id="rp-play" title="播放 / 暂停（空格）">▶</button>
+      <button class="rp-btn" data-rp="next" title="下一镜（→）">⏭</button>
+      <span id="rp-time">00:00.00 / 00:00.00</span>
+      <span id="rp-win" class="hidden"></span>
+      <div id="rp-track"><i id="rp-fill"></i><ul id="rp-marks"></ul><i id="rp-winmark" class="hidden"></i></div>
+      <button class="rp-btn" data-rp="mode" id="rp-mode" title="切换 直录回放 / 第一人称 / 电影运镜（C）">直录回放</button>
+      <span id="rp-speed" class="gsel-host" title="播放速度"></span>
+      <button class="rp-btn cine hidden" data-rp="cine" id="rp-cine" title="电影级运镜剪辑">🎬 剪辑</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ 暂停 ══════════════ -->
+  <div id="pause" class="screen">
+    <div class="pause-box">
+      <h2>已暂停</h2>
+      <button class="mbtn" data-act="resume"><b>继续</b></button>
+      <button class="mbtn" data-act="restart"><b>重新开始本关</b></button>
+      <button class="mbtn hidden" data-act="replay"><b>▶ 回放 / 剪辑本局</b></button>
+      <button class="mbtn" data-act="levels"><b>选择关卡</b></button>
+      <button class="mbtn" data-act="settings"><b>设置</b></button>
+      <button class="mbtn danger" data-act="quit"><b>返回大厅</b></button>
+    </div>
+  </div>
+
+  <!-- ══════════════ 结算 ══════════════ -->
+  <div id="result" class="screen">
+    <div class="result-box">
+      <div id="res-icon">✦</div>
+      <h2 id="res-title">通关！</h2>
+      <div id="res-sub"></div>
+      <div id="res-stats" class="res-stats"></div>
+      <div class="res-btns">
+        <button class="mbtn primary" data-act="again"><b>再来一次</b></button>
+        <button class="mbtn" data-act="replay"><b>▶ 看回放</b></button>
+        <button class="mbtn" data-act="cine"><b>🎬 电影剪辑</b></button>
+        <button class="mbtn" data-act="next"><b>下一关</b></button>
+        <button class="mbtn" data-act="hall"><b>返回大厅</b></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 编辑器 ══════════════ -->
+  <div id="editor" class="hidden">
+    <div id="ed-top">
+      <div class="ed-logo">洪梦编辑器</div>
+      <div class="ed-tools" id="ed-create"></div>
+      <div class="ed-spacer"></div>
+      <div class="ed-more" id="ed-more"></div>
+      <div class="ed-actions">
+        <button class="xbtn" data-act="undo" title="撤销 Ctrl+Z">↶</button>
+        <button class="xbtn" data-act="redo" title="重做 Ctrl+Y">↷</button>
+        <button class="mbtn sm" data-act="level-info">关卡信息</button>
+        <button class="mbtn sm" data-act="test-here" title="以选中对象所在位置为出生点开始试玩">⚑ 在此处测试</button>
+        <button class="mbtn sm" data-act="test">▶ 试玩</button>
+        <button class="mbtn sm primary" data-act="save">保存</button>
+        <button class="xbtn" data-act="exit" title="退出到存档列表">✕</button>
+      </div>
+    </div>
+
+    <div id="ed-mid">
+      <div id="ed-left">
+        <div class="bot-tabs" id="ed-left-tabs">
+          <button class="tab on" data-ltab="props">属性</button>
+          <button class="tab" data-ltab="layers">图层</button>
+          <button class="tab" data-ltab="prefab">预制件</button>
+        </div>
+        <div class="edpane grow" id="pane-props">
+          <div class="pane-head"><span id="props-title">属性</span>
+            <div class="pane-tools"><button class="mini" data-act="reset-prop" title="重置">⟲</button></div>
+          </div>
+          <div class="pane-body" id="props"></div>
+        </div>
+        <div class="edpane grow hidden" id="pane-layers">
+          <div class="pane-head"><span>涂鸦图层</span>
+            <div class="pane-tools">
+              <button class="mini" data-act="layer-add" title="新建图层">＋</button>
+              <button class="mini" data-act="layer-del" title="删除图层">🗑</button>
+            </div>
+          </div>
+          <div class="pane-body"><ul id="layer-list"></ul></div>
+        </div>
+        <div class="edpane grow hidden" id="pane-prefab">
+          <div class="pane-head"><span>预制件工具箱</span>
+            <div class="pane-tools">
+              <button class="mini" data-act="prefab-import" title="从文件导入预制件（.fdprefab）">↥</button>
+              <button class="mini" data-act="prefab-refresh" title="刷新预制件工具箱">⟲</button>
+            </div>
+          </div>
+          <div class="pane-body">
+            <div class="pf-bar" id="prefab-bar"></div>
+            <div class="fg-grid" id="prefab-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ed-rs ed-rs-v" data-rs="left" title="拖动调整左栏宽度"></div>
+
+      <div id="ed-view">
+        <div id="ed-view-hud">
+          <div class="vh-left">
+            <span id="vh-mode" class="vh-chip">选择</span>
+            <span id="vh-space" class="vh-chip">世界</span>
+            <span id="vh-snap" class="vh-chip">吸附关</span>
+          </div>
+          <div class="vh-right"><span id="vh-fps">—</span><span id="vh-tris">—</span><span id="vh-cam">—</span></div>
+        </div>
+        <div id="ed-gizmo-bar-top"></div>
+        <div id="ed-freefly-hint" class="hidden">中键拖动旋转视角 · WASD 飞行 · Q/E 升降 · Shift 加速</div>
+        <div id="ed-paint-hud" class="hidden">
+          <div class="ph-row">
+            <span class="ph-lab">涂鸦笔</span>
+            <button class="mini on" data-painttool="brush">笔刷</button>
+            <button class="mini" data-painttool="eraser">橡皮</button>
+            <button class="mini" data-painttool="stamp">材质章</button>
+            <button class="mini" data-painttool="picker">吸色</button>
+          </div>
+          <div class="ph-row">
+            <span class="ph-lab">颜色</span>
+            <input type="color" id="paint-color" value="#ff5c8a">
+            <span class="ph-lab">A</span><input type="range" id="paint-alpha" min="0" max="1" step="0.01" value="1">
+          </div>
+          <div class="ph-row">
+            <span class="ph-lab">笔触</span><input type="range" id="paint-size" min="1" max="200" step="1" value="24">
+            <span id="paint-size-num" class="ph-num">24</span>
+          </div>
+          <div class="ph-row">
+            <span class="ph-lab">硬度</span><input type="range" id="paint-hard" min="0" max="1" step="0.01" value="0.5">
+          </div>
+          <div class="ph-row">
+            <span class="ph-lab">目标图层</span><span id="paint-layer" class="gsel-host"></span>
+          </div>
+        </div>
+        <div id="ed-parkour-hud" class="hidden"></div>
+        <div id="ed-model-hud" class="hidden"></div>
+        <div id="ed-gizmo-bar"></div>
+      </div>
+
+      <div class="ed-rs ed-rs-v" data-rs="right" title="拖动调整右栏宽度"></div>
+
+      <div id="ed-right">
+        <div class="bot-tabs" id="ed-right-tabs">
+          <button class="tab on" data-rtab="outliner">对象树</button>
+          <button class="tab" data-rtab="assets">素材</button>
+        </div>
+        <div class="edpane grow" id="pane-outliner">
+          <div class="pane-head"><span>对象树 / 浏览器</span>
+            <div class="pane-tools">
+              <button class="mini" data-act="group" title="编组">⧉</button>
+              <button class="mini" data-act="unparent" title="移出编组">↰</button>
+              <button class="mini" data-act="del" title="删除">🗑</button>
+            </div>
+          </div>
+          <div class="pane-body"><ul id="tree"></ul></div>
+        </div>
+        <div class="edpane grow hidden" id="pane-assets">
+          <div class="pane-head"><span>素材库</span>
+            <div class="pane-tools">
+              <button class="mini" data-act="asset-import-tex" title="导入图片素材（贴图 / 全景图）">＋图</button>
+              <button class="mini" data-act="asset-import-audio" title="导入音频素材">＋音</button>
+              <button class="mini" data-act="asset-import-model" title="导入 .glb / .gltf / .obj 模型">＋模</button>
+              <button class="mini" data-act="texmod-open" title="贴图修改器：以贴图素材为源，多层叠加 / 扭曲失真 / 风格化结构 / 调色，烘成一张新贴图素材">🎛</button>
+              <button class="mini" data-act="asset-refresh" title="刷新素材库">⟲</button>
+            </div>
+          </div>
+          <div class="pane-body"><ul id="asset-list"></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ed-rs ed-rs-h" data-rs="bottom" title="拖动调整底部面板高度"></div>
+
+    <div id="ed-bottom">
+      <div class="bot-tabs" id="ed-bot-tabs">
+        <button class="tab on" data-tab="events">事件编辑器</button>
+        <button class="tab" data-tab="anim">动画编辑器</button>
+        <button class="tab" data-tab="packs">关卡包</button>
+        <button class="tab" data-tab="console">输出</button>
+        <div class="ed-spacer"></div>
+        <span class="bot-hint" id="ed-bot-hint"></span>
+      </div>
+      <div class="bot-body" id="ed-bot-body"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 模态 / 提示 ══════════════ -->
+  <div id="modal" class="hidden"></div>
+  <div id="toast"></div>
+  <div id="draghint" class="hidden"></div>
+</div>
+
+<script>
+/* 无服务器运行的引导，必须放在 importmap / 模块脚本之前。
+   静态托管（miniserve 等）下注册 sw.js 绕开模块缓存，避免卡在「正在初始化」。
+   serve.py 与 Electron 桌面版都自带本地存档接口（/api/store/ping 可用），
+   这条分支不会触发。 */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
+
+  function register() {
+    var refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (refreshing) return;           // 首次接管 / 更新后只自动重载一次
+      refreshing = true;
+      location.reload();
+    });
+    navigator.serviceWorker.register('./sw.js').catch(function () { /* 不支持就忽略 */ });
+  }
+
+  // 有本地存档接口 = serve.py / Electron 桌面版，交给它的版本号打标即可
+  fetch('./api/store/ping', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) { if (!(j && j.ok)) register(); })
+    .catch(function () { register(); });
+})();
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./.flooding_dreams/vendor/three.module.js",
+    "three/addons/": "./.flooding_dreams/vendor/three-addons/",
+    "cannon": "./.flooding_dreams/vendor/cannon-es.js"
+  }
+}
+</script>
+<script type="module" src="./.flooding_dreams/js/main.js"></script>
+</body>
+</html>

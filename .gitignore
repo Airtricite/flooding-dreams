@@ -1,0 +1,7 @@
+# 运行时生成的存档（由 serve.py / 本地存档后端写入）
+.flooding_dreams/saves/
+
+# 系统 / 编辑器杂项
+.DS_Store
+Thumbs.db
+*.log
