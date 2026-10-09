@@ -1,10 +1,7 @@
 # Flooding Dreams
 
-A flood-escape platformer — **pure front-end engine source (HTML edition)**.
+Dream themed HTML Flood Escape 3D platformer with level editor built on ES Modules, three.js and cannon-es.
 
-Runs directly in the browser with no build step and no bundler: vanilla ES Modules + three.js + cannon-es.
-
-> This repository is a **trimmed build without extended assets and without built-in levels** — it ships only the runnable web engine and the level editor.
 
 ## What's inside
 
